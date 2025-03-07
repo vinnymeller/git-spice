@@ -30,13 +30,15 @@ jobs:
 
     strategy:
       matrix:
-        os: ["ubuntu-latest", "windows-latest"]
+        os: ["ubuntu-latest", "windows-latest", "macos-latest"]
         git-version: ["system"]
         include:
           # On Linux, also test against specific versions built from source.
           - {os: ubuntu-latest, git-version: "2.38.0"}
           # On Windows, run without coverage.
           - {os: windows-latest, no-cover: true}
+          # On macOS, run without coverage.
+          - {os: macos-latest, no-cover: true}
 
     steps:
     - uses: actions/checkout@v4

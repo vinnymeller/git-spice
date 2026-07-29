@@ -1,7 +1,9 @@
-// Package github provides the GitHub GraphQL operations needed by git-spice.
+// Package github provides the GitHub API operations needed by git-spice.
 //
-// The package owns GitHub's GraphQL wire protocol, authenticated request
-// execution, and response error model.
+// The package owns GitHub's GraphQL and REST wire protocols, authenticated
+// request execution, and response error models.
+// GraphQL covers most operations; REST covers those GitHub exposes no GraphQL
+// mutation for, such as the Stacked PRs endpoints.
 // Callers supply credentials through [TokenSource] and adapt the typed results
 // to their own domain models.
 // The package does not own credential discovery, persistence, or login flows.
@@ -43,6 +45,10 @@ type Gateway struct {
 	// endpoint is the GraphQL endpoint derived from the configured API base URL.
 	endpoint string
 
+	// apiURL is the REST API base URL that endpoint was derived from.
+	// REST operations join their paths onto it.
+	apiURL string
+
 	// httpClient performs requests after the gateway has supplied authentication.
 	httpClient *http.Client
 
@@ -53,7 +59,8 @@ type Gateway struct {
 // NewGateway builds a client for a GitHub API base URL.
 //
 // apiURL is the REST API base URL reported by the forge configuration;
-// NewGateway appends GitHub's GraphQL endpoint path.
+// NewGateway appends GitHub's GraphQL endpoint path for GraphQL operations
+// and retains apiURL itself for REST operations.
 // A nil HTTP client uses [http.DefaultClient].
 // tokens is required and is consulted once for each operation.
 func NewGateway(apiURL string, httpClient *http.Client, tokens TokenSource) (*Gateway, error) {
@@ -69,6 +76,7 @@ func NewGateway(apiURL string, httpClient *http.Client, tokens TokenSource) (*Ga
 	}
 	return &Gateway{
 		endpoint:   endpoint,
+		apiURL:     apiURL,
 		httpClient: httpClient,
 		tokens:     tokens,
 	}, nil

@@ -258,6 +258,15 @@ func (h *Handler) SubmitBatch(ctx context.Context, req *BatchRequest) error {
 		return nil // nothing to do
 	}
 
+	syncNativeStack(
+		ctx,
+		h.Service, h.Log,
+		opts.NativeStack,
+		branchesToComment,
+		h.remote,
+		h.upstreamRepository,
+	)
+
 	return updateNavigationComments(
 		ctx,
 		h.Store, h.Service, h.Log,
@@ -324,6 +333,15 @@ func (h *Handler) Submit(ctx context.Context, req *Request) error {
 		// Nothing was submitted, so nothing to do.
 		return nil
 	}
+
+	syncNativeStack(
+		ctx,
+		h.Service, h.Log,
+		opts.NativeStack,
+		[]string{req.Branch},
+		h.remote,
+		h.upstreamRepository,
+	)
 
 	return updateNavigationComments(
 		ctx,

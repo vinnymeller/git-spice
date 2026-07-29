@@ -876,6 +876,65 @@ When this is configured and multiple templates exist,
 git-spice will automatically use the specified template
 without prompting the user for selection.
 
+### spice.submit.nativeStack
+
+<!-- gs:version unreleased -->
+
+Whether CR submission commands ($$gs branch submit$$ and friends)
+should register the stack with the forge as a first-class stack object,
+for forges that model one.
+
+git-spice always chains each CR onto the branch below it,
+which is what makes a stack reviewable.
+This option additionally tells the forge that those CRs are one stack,
+so the forge itself can present stack navigation and stack-wide actions.
+
+Currently only GitHub models stacks this way,
+through its Stacked PRs feature.
+That feature is in private preview and must be enabled per repository;
+where it isn't, this option does nothing.
+
+Defaults to `false`.
+
+**Example:**
+
+```bash
+git config spice.submit.nativeStack true
+```
+
+A stack on the forge is linear, but a git-spice stack is a tree:
+a branch may have several branches above it.
+A tree cannot be represented faithfully,
+because a CR belongs to at most one stack on the forge,
+so two chains cannot share the CRs below a fork.
+
+git-spice registers a single chain: the one covering the most
+submitted branches, and the longest among those.
+Submitting one path of a tree therefore registers that path,
+while submitting the whole tree registers its longest chain
+and reports the branches left out.
+
+!!! warning
+
+    A CR that belongs to a stack on GitHub cannot be merged with
+    $$gs branch merge$$: GitHub requires its asynchronous merge API for
+    stacked CRs, which git-spice does not use yet.
+    Merge such CRs from the forge's web interface instead.
+    Setting this option back to `false` does not remove a stack that
+    already exists, so the CRs stay unmergeable by git-spice until the
+    stack is removed on the forge.
+
+!!! note
+
+    Because the forge's stack API can only append to the top of a stack,
+    reordering, folding, or dropping a branch requires git-spice to remove
+    the stack on the forge and create it again.
+    The CRs themselves — along with their reviews and comments — are not
+    affected, but the stack's own identifier and URL change.
+
+    A stack is left untouched when converging would mean removing CRs that
+    belong to a different stack on the forge, and when submitting from a fork.
+
 ### spice.submit.navigationComment
 
 Specifies whether CR submission commands ($$gs branch submit$$ and friends)

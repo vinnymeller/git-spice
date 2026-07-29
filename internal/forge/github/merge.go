@@ -9,6 +9,15 @@ import (
 )
 
 // MergeChange merges an open pull request into its base branch.
+//
+// TODO(native-stacks): merge-async required; see D6 in
+// plans/github-native-stacks.md.
+//
+// This uses GitHub's synchronous merge mutation, which GitHub rejects for a
+// pull request that belongs to a native stack (see [Repository.SyncStack]).
+// Such a pull request must be merged through GitHub's asynchronous merge API,
+// which also merges everything below it in the stack, so supporting it is more
+// than swapping the endpoint.
 func (r *Repository) MergeChange(
 	ctx context.Context, fid forge.ChangeID,
 	opts forge.MergeChangeOptions,
